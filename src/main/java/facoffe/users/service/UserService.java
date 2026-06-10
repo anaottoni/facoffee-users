@@ -12,7 +12,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import facoffe.users.DTO.UserDTO;
+import facoffe.users.DTO.CreateUserDTO;
+import facoffe.users.exception.EmailAlreadyExistsException;
 import facoffe.users.model.Role;
 import facoffe.users.model.User;
 import facoffe.users.repository.RoleRepository;
@@ -33,7 +34,11 @@ public class UserService {
     @Value("${realm}")
     private String realm;
 
-    public User createUser(UserDTO userDTO){
+    public User createUser(CreateUserDTO userDTO){
+        if (userRepository.existsByEmail(userDTO.getEmail())){
+            throw new EmailAlreadyExistsException("E-mail já existe no sistema.");
+        }
+
         // criando user local
         User newUser = new User();
         newUser.setName(userDTO.getName());

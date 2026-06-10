@@ -6,9 +6,11 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import facoffe.users.DTO.UserDTO;
+import facoffe.users.DTO.CreateUserDTO;
 import facoffe.users.model.User;
 import facoffe.users.service.UserService;
+import jakarta.validation.Valid;
+
 import org.springframework.web.bind.annotation.PostMapping;
 
 
@@ -20,7 +22,7 @@ public class UserController {
     private UserService service;
 
     @PostMapping("")
-    public ResponseEntity<User> createUser(@RequestBody UserDTO userDTO) {
+    public ResponseEntity<User> createUser(@Valid @RequestBody CreateUserDTO userDTO) {
         // - Deve ser possível criar um novo usuário, fornecendo `name`, `email` e `roles`.
         
         User user = service.createUser(userDTO);

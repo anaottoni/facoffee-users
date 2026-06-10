@@ -9,4 +9,5 @@ import facoffe.users.model.User;
 @Repository
 public interface UserRepository extends JpaRepository<User, String> {
     User findByEmail(String email);
+    Boolean existsByEmail(String email);
 }

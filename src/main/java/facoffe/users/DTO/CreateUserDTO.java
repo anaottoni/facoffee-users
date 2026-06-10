@@ -3,9 +3,19 @@ package facoffe.users.DTO;
 import java.util.HashSet;
 import java.util.Set;
 
-public class UserDTO {
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
+
+public class CreateUserDTO {
+    @NotBlank(message = " Campo obrigatório ausente.")
     private String name;
+
+    @NotBlank(message = " Campo obrigatório ausente.")
+    @Email(message = "E-mail inválido.")
     private String email;
+
+    @NotEmpty(message = " Campo obrigatório ausente.")
     private Set<String> roles = new HashSet<>();
 
     public void setName(String name) {
