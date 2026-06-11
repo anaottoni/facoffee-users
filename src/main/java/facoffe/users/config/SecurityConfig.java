@@ -6,37 +6,21 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.http.HttpMethod;
 
 @Configuration
 @EnableWebSecurity
-@EnableMethodSecurity
+@EnableMethodSecurity 
 public class SecurityConfig {
-
-    private final CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
-    private final CustomAccessDeniedHandler customAccessDeniedHandler;
-
-    public SecurityConfig(CustomAuthenticationEntryPoint customAuthenticationEntryPoint,
-                          CustomAccessDeniedHandler customAccessDeniedHandler) {
-        this.customAuthenticationEntryPoint = customAuthenticationEntryPoint;
-        this.customAccessDeniedHandler = customAccessDeniedHandler;
-    } //erros 401 e 403 personalizados
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
             .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(auth -> auth
-            .requestMatchers(HttpMethod.POST, "/users").permitAll()
-            //.requestMatchers(HttpMethod.GET, "/users").permitAll() 
-            .anyRequest().authenticated()
-)
+                .anyRequest().permitAll() 
+            )
             .oauth2ResourceServer(oauth2 -> oauth2
                 .jwt(jwt -> jwt.jwtAuthenticationConverter(new JwtAuthorityConverter()))
-            )
-            .exceptionHandling(exception -> exception
-                .authenticationEntryPoint(customAuthenticationEntryPoint) // 401
-                .accessDeniedHandler(customAccessDeniedHandler)           // 403
             );
 
         return http.build();
