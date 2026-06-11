@@ -39,8 +39,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.security.access.AccessDeniedException;
 
-
-
 @Service
 public class UserService {
     @Autowired
