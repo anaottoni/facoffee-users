@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import facoffe.users.DTO.ErrorResponseDTO;
 import facoffe.users.exception.EmailAlreadyExistsException;
 import jakarta.servlet.http.HttpServletRequest;
+import facoffe.users.exception.UserNotFoundException;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -60,6 +61,22 @@ public class GlobalExceptionHandler {
         );
         
         return ResponseEntity.status(HttpStatus.SC_CONFLICT).body(errorBody);
+    }
+
+    @ExceptionHandler(UserNotFoundException.class)
+    public ResponseEntity<ErrorResponseDTO> handleUserNotFound(
+            UserNotFoundException ex,
+            HttpServletRequest request) {
+
+        ErrorResponseDTO error = new ErrorResponseDTO(
+                LocalDateTime.now(),
+                404,
+                "Not Found",
+                ex.getMessage(),
+                request.getRequestURI()
+        );
+
+        return ResponseEntity.status(404).body(error);
     }
 
     /**

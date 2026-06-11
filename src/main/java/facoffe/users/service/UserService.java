@@ -23,11 +23,23 @@ import facoffe.users.event.EventEnvelope;
 import facoffe.users.event.UserDeactivatedPayload;
 import facoffe.users.exception.CustomAccessDeniedException;
 import facoffe.users.exception.EmailAlreadyExistsException;
+import facoffe.users.exception.UserNotFoundException;
 import facoffe.users.model.Role;
 import facoffe.users.model.User;
 import facoffe.users.repository.RoleRepository;
 import facoffe.users.repository.UserRepository;
 import jakarta.ws.rs.core.Response;
+import facoffe.users.DTO.PageDTO;
+import facoffe.users.DTO.UserListResponseDTO;
+import facoffe.users.DTO.UserResponseDTO;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
+import org.springframework.security.access.AccessDeniedException;
+
+
 
 @Service
 public class UserService {
@@ -109,6 +121,85 @@ public class UserService {
 
         return newUser;
     }
+
+
+    private UserResponseDTO toResponseDTO(User user) {
+        return new UserResponseDTO(user);
+    }
+
+    public UserListResponseDTO listUsers(String status,String role,Integer page,Integer size) {
+        
+        //Cria objeto de paginação
+        //page = página desejada
+        //size = quantidade de registros
+        Pageable pageable = PageRequest.of(page, size);
+        
+        //Variável que receberá os usuários encontrados
+        Page<User> users;
+
+        //Se vier status e role
+        if (status != null && role != null) {
+
+            users = userRepository.findByStatusAndRoles_Name(status,role,pageable);
+
+        //Se vier apenas status
+        } else if (status != null) {
+
+            users = userRepository.findByStatus(status,pageable);
+
+        //Se vier apenas role
+        } else if (role != null) {
+
+            users = userRepository.findByRoles_Name(role,pageable);
+
+        //Sem filtros
+        } else {
+
+            users = userRepository.findAll(pageable);
+        }
+
+        //Monta resposta de acordo com o Swagger
+        return new UserListResponseDTO(
+
+                //Converte cada User em UserResponseDTO
+                users.getContent()
+                        .stream()
+                        //para cada user converte em userDTO
+                        .map(this::toResponseDTO)
+                        .toList(),
+
+                //Informações da paginação
+                new PageDTO(
+                        users.getNumber(),
+                        users.getSize(),
+                        users.getTotalElements(),
+                        users.getTotalPages()
+                )
+        );
+    
+    }
+
+    public UserResponseDTO getUserById(String userId, JwtAuthenticationToken auth) {
+
+        String authenticatedUserId = auth.getToken().getSubject();
+
+        boolean isManager = auth.getAuthorities()
+                .stream()
+                .anyMatch(a ->
+                        a.getAuthority().equals("ROLE_MANAGER"));
+
+        if (!isManager && !authenticatedUserId.equals(userId)) {
+            throw new AccessDeniedException(
+                    "Usuário autenticado não possui permissão para acessar este recurso.");
+        }
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() ->
+                        new UserNotFoundException("Campo obrigatório ausente."));
+
+        return toResponseDTO(user);
+    }
+
 
     public User updateUser(String idToDelete, UpdateUserRequestDTO updateDTO, Authentication authentication) {
 
