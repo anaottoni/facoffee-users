@@ -7,7 +7,7 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 
-public class CreateUserDTO {
+public class CreateUserRequestDTO {
     @NotBlank(message = " Campo obrigatório ausente.")
     private String name;
 

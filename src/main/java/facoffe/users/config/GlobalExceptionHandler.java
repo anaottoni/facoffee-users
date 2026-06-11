@@ -61,4 +61,42 @@ public class GlobalExceptionHandler {
         
         return ResponseEntity.status(HttpStatus.SC_CONFLICT).body(errorBody);
     }
+
+    /**
+     * CASO: Resposta '403' - Forbidden do contrato (MANAGER_OR_SELF falhou)
+     */
+    @ExceptionHandler(facoffe.users.exception.CustomAccessDeniedException.class) // MODIFICAÇÃO AQUI
+    public ResponseEntity<ErrorResponseDTO> handleAccessDenied(
+            facoffe.users.exception.CustomAccessDeniedException ex, // MODIFICAÇÃO AQUI
+            HttpServletRequest request) {
+
+        ErrorResponseDTO error = new ErrorResponseDTO(
+                LocalDateTime.now(),
+                403,
+                "Forbidden",
+                ex.getMessage(), 
+                request.getRequestURI()
+        );
+
+        return ResponseEntity.status(403).body(error);
+    }
+
+    /**
+     * CASO: Resposta '404' - NotFound do contrato (ID informado não existe no Banco)
+     */
+    @ExceptionHandler(jakarta.persistence.EntityNotFoundException.class)
+    public ResponseEntity<ErrorResponseDTO> handleNotFound(
+            jakarta.persistence.EntityNotFoundException ex, 
+            HttpServletRequest request) {
+
+        ErrorResponseDTO error = new ErrorResponseDTO(
+                LocalDateTime.now(),
+                404,
+                "Not Found",
+                ex.getMessage(),
+                request.getRequestURI()
+        );
+
+        return ResponseEntity.status(404).body(error);
+    }
 }
