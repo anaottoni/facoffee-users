@@ -18,101 +18,102 @@ import facoffe.users.exception.UserNotFoundException;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-        /**
-         * CASO 1: Captura erros de validação do contrato (Campos obrigatórios ausentes,
-         * e-mail inválido, etc.)
-         * Disparado automaticamente pelo @Valid na Controller
-         */
-        @ExceptionHandler(MethodArgumentNotValidException.class)
-        public ResponseEntity<ErrorResponseDTO> handleValidationExceptions(
-                        MethodArgumentNotValidException ex,
-                        HttpServletRequest request) {
+    /**
+     * CASO 1: Captura erros de validação do contrato (Campos obrigatórios ausentes, e-mail inválido, etc.)
+     * Disparado automaticamente pelo @Valid na Controller
+     */
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<ErrorResponseDTO> handleValidationExceptions(
+            MethodArgumentNotValidException ex, 
+            HttpServletRequest request) {
+        
+        // Junta todas as mensagens de campos que falharam (ex: "O campo 'name' é obrigatório | O e-mail deve ser válido")
+        String errorMessage = ex.getBindingResult()
+                .getFieldErrors()
+                .stream()
+                .map(FieldError::getDefaultMessage)
+                .distinct()
+                .collect(Collectors.joining(" | "));
 
-                // Junta todas as mensagens de campos que falharam (ex: "O campo 'name' é
-                // obrigatório | O e-mail deve ser válido")
-                String errorMessage = ex.getBindingResult()
-                                .getFieldErrors()
-                                .stream()
-                                .map(FieldError::getDefaultMessage)
-                                .distinct()
-                                .collect(Collectors.joining(" | "));
+        ErrorResponseDTO error = new ErrorResponseDTO(
+                LocalDateTime.now(),
+                HttpStatus.SC_BAD_REQUEST,       // 400
+                "Bad Request",
+                errorMessage,                             // Mensagem detalhada dos campos
+                request.getRequestURI()                   // Rota exata da requisição
+        );
 
-                ErrorResponseDTO error = new ErrorResponseDTO(
-                                LocalDateTime.now(),
-                                HttpStatus.SC_BAD_REQUEST, // 400
-                                "Bad Request",
-                                errorMessage, // Mensagem detalhada dos campos
-                                request.getRequestURI() // Rota exata da requisição
-                );
+        return ResponseEntity.status(HttpStatus.SC_BAD_REQUEST).body(error);
+    }
 
-                return ResponseEntity.status(HttpStatus.SC_BAD_REQUEST).body(error);
-        }
+    @ExceptionHandler(EmailAlreadyExistsException.class)
+    public ResponseEntity<ErrorResponseDTO> handleEmailAlreadyExists(
+            EmailAlreadyExistsException ex, 
+            HttpServletRequest request) {
+        
+        // Aqui você monta o JSON exatamente com os campos e a ordem que você quiser
+        ErrorResponseDTO errorBody = new ErrorResponseDTO(
+            LocalDateTime.now(),
+            HttpStatus.SC_CONFLICT,
+            "Bad Request",
+            ex.getMessage(),
+            request.getRequestURI()
+        );
+        
+        return ResponseEntity.status(HttpStatus.SC_CONFLICT).body(errorBody);
+    }
 
-        @ExceptionHandler(EmailAlreadyExistsException.class)
-        public ResponseEntity<ErrorResponseDTO> handleEmailAlreadyExists(
-                        EmailAlreadyExistsException ex,
-                        HttpServletRequest request) {
+    @ExceptionHandler(UserNotFoundException.class)
+    public ResponseEntity<ErrorResponseDTO> handleUserNotFound(
+            UserNotFoundException ex,
+            HttpServletRequest request) {
 
-                // Aqui você monta o JSON exatamente com os campos e a ordem que você quiser
-                ErrorResponseDTO errorBody = new ErrorResponseDTO(
-                                LocalDateTime.now(),
-                                HttpStatus.SC_CONFLICT,
-                                "Bad Request",
-                                ex.getMessage(),
-                                request.getRequestURI());
+        ErrorResponseDTO error = new ErrorResponseDTO(
+                LocalDateTime.now(),
+                404,
+                "Not Found",
+                ex.getMessage(),
+                request.getRequestURI()
+        );
 
-                return ResponseEntity.status(HttpStatus.SC_CONFLICT).body(errorBody);
-        }
+        return ResponseEntity.status(404).body(error);
+    }
 
-        @ExceptionHandler(UserNotFoundException.class)
-        public ResponseEntity<ErrorResponseDTO> handleUserNotFound(
-                        UserNotFoundException ex,
-                        HttpServletRequest request) {
+    /**
+     * CASO: Resposta '403' - Forbidden do contrato (MANAGER_OR_SELF falhou)
+     */
+    @ExceptionHandler(facoffe.users.exception.CustomAccessDeniedException.class) // MODIFICAÇÃO AQUI
+    public ResponseEntity<ErrorResponseDTO> handleAccessDenied(
+            facoffe.users.exception.CustomAccessDeniedException ex, // MODIFICAÇÃO AQUI
+            HttpServletRequest request) {
 
-                ErrorResponseDTO error = new ErrorResponseDTO(
-                                LocalDateTime.now(),
-                                404,
-                                "Not Found",
-                                ex.getMessage(),
-                                request.getRequestURI());
+        ErrorResponseDTO error = new ErrorResponseDTO(
+                LocalDateTime.now(),
+                403,
+                "Forbidden",
+                ex.getMessage(), 
+                request.getRequestURI()
+        );
 
-                return ResponseEntity.status(404).body(error);
-        }
+        return ResponseEntity.status(403).body(error);
+    }
 
-        /**
-         * CASO: Resposta '403' - Forbidden do contrato (MANAGER_OR_SELF falhou)
-         */
-        @ExceptionHandler(facoffe.users.exception.CustomAccessDeniedException.class) // MODIFICAÇÃO AQUI
-        public ResponseEntity<ErrorResponseDTO> handleAccessDenied(
-                        facoffe.users.exception.CustomAccessDeniedException ex, // MODIFICAÇÃO AQUI
-                        HttpServletRequest request) {
+    /**
+     * CASO: Resposta '404' - NotFound do contrato (ID informado não existe no Banco)
+     */
+    @ExceptionHandler(jakarta.persistence.EntityNotFoundException.class)
+    public ResponseEntity<ErrorResponseDTO> handleNotFound(
+            jakarta.persistence.EntityNotFoundException ex, 
+            HttpServletRequest request) {
 
-                ErrorResponseDTO error = new ErrorResponseDTO(
-                                LocalDateTime.now(),
-                                403,
-                                "Forbidden",
-                                ex.getMessage(),
-                                request.getRequestURI());
+        ErrorResponseDTO error = new ErrorResponseDTO(
+                LocalDateTime.now(),
+                404,
+                "Not Found",
+                ex.getMessage(),
+                request.getRequestURI()
+        );
 
-                return ResponseEntity.status(403).body(error);
-        }
-
-        /**
-         * CASO: Resposta '404' - NotFound do contrato (ID informado não existe no
-         * Banco)
-         */
-        @ExceptionHandler(jakarta.persistence.EntityNotFoundException.class)
-        public ResponseEntity<ErrorResponseDTO> handleNotFound(
-                        jakarta.persistence.EntityNotFoundException ex,
-                        HttpServletRequest request) {
-
-                ErrorResponseDTO error = new ErrorResponseDTO(
-                                LocalDateTime.now(),
-                                404,
-                                "Not Found",
-                                ex.getMessage(),
-                                request.getRequestURI());
-
-                return ResponseEntity.status(404).body(error);
-        }
+        return ResponseEntity.status(404).body(error);
+    }
 }
