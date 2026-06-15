@@ -17,15 +17,15 @@ public class DataInitializer implements CommandLineRunner {
 
     @Override
     public void run(String... args) {
-        createRoleIfNotExists(1L, "PARTICIPANT");
-        createRoleIfNotExists(2L, "MANAGER");
+        createRoleIfNotExists("PARTICIPANT");
+        createRoleIfNotExists("MANAGER");
     }
 
-    private void createRoleIfNotExists(Long id, String name) {
+    private void createRoleIfNotExists(String name) {
         Role role = roleRepository.findByName(name);
 
         if (role == null) {
-            roleRepository.save(new Role(id, name));
+            roleRepository.save(new Role(name));
         }
     }
 }
