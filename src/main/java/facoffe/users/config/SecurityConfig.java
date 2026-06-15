@@ -6,6 +6,10 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.web.SecurityFilterChain;
+
+import facoffe.users.exception.CustomAccessDeniedHandler;
+import facoffe.users.exception.CustomAuthenticationEntryPoint;
+
 import org.springframework.http.HttpMethod;
 
 @Configuration

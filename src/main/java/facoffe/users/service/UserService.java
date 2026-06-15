@@ -201,13 +201,18 @@ public class UserService {
 
     public User updateUser(String idToDelete, UpdateUserRequestDTO updateDTO, Authentication authentication) {
 
-        String loggedUserEmail = null;
+        
+        if (authentication == null) {
+        throw new facoffe.users.exception.CustomAccessDeniedException(
+                "Usuário não está autenticado no contexto de segurança.");
+    }
 
-        // pega o email do token
-        if (authentication != null
-                && authentication.getPrincipal() instanceof org.springframework.security.oauth2.jwt.Jwt jwt) {
-            loggedUserEmail = jwt.getClaimAsString("email");
-        }
+    String loggedUserEmail = null;
+
+    // pega o email do token
+    if (authentication.getPrincipal() instanceof org.springframework.security.oauth2.jwt.Jwt jwt) {
+        loggedUserEmail = jwt.getClaimAsString("email");
+    }
 
         // verifica se o usuario e manager
         boolean isManager = authentication.getAuthorities().stream()
