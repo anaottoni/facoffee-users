@@ -318,8 +318,7 @@ public class UserService {
 
             String jsonEvent = mapper.writeValueAsString(event);
 
-            // NOME DA FILA/ROUTING KEY ALTERADO AQUI:
-            rabbitTemplate.convertAndSend("participation.user-deactivated", jsonEvent);
+            rabbitTemplate.convertAndSend("users.deactivated", jsonEvent);
             System.out.println("[RabbitMQ] Evento UserDeactivated publicado com sucesso para o ID: " + idToDelete);
 
         } catch (Exception e) {
